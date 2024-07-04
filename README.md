@@ -29,7 +29,7 @@ You can also use the local model for free with Ollama.
 5. Make your code changes and stage them with `git add .`
 6. Type `ai-commit` in your terminal
 7. AI-Commit will analyze your changes and generate a commit message
-8. Approve the commit message and AI-Commit will create the commit for you ✅
+8. Approve the commit message and AI-Commit will create the commit for yous ✅
 
 ## To Install
 
