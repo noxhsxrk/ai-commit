@@ -13,7 +13,7 @@ This package uses the power of OpenAI's GPT-3 model to understand your code chan
 ```sh
 git clone https://github.com/noxhsxrk/ai-commit
 cd ai-commit
-npm install -g`
+yarn install-lib
 ```
 
 ## How it Works
