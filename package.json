@@ -25,10 +25,6 @@
   ],
   "author": "Insuline.ru <insuline.ru@gmail.com>",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/insulineru/ai-commit/issues"
-  },
-  "homepage": "https://github.com/insulineru/ai-commit#readme",
   "dependencies": {
     "chatgpt": "^5.2.5",
     "dotenv": "^16.0.3",
