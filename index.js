@@ -6,25 +6,18 @@ import { ChatGPTAPI } from "chatgpt";
 import inquirer from "inquirer";
 import { getArgs, checkGitRepository } from "./helpers.js";
 import { filterApi } from "./filterApi.js";
-import { AI_PROVIDER, MODEL, args } from "./config.js";
+import { args } from "./config.js";
 
 const REGENERATE_MSG = "♻️ Regenerate Commit Messages";
-
-console.log("AI provider: ", AI_PROVIDER);
-
-const ENDPOINT = args.ENDPOINT || process.env.ENDPOINT;
 
 const apiKey = args.apiKey || process.env.OPENAI_API_KEY;
 
 const language = args.language || process.env.AI_COMMIT_LANGUAGE || "english";
 
-if (AI_PROVIDER == "openai" && !apiKey) {
+if (!apiKey) {
   console.error("Please set the OPENAI_API_KEY environment variable.");
   process.exit(1);
 }
-
-let template = args.template || process.env.AI_COMMIT_COMMIT_TEMPLATE;
-const doAddEmoji = args.emoji || process.env.AI_COMMIT_ADD_EMOJI;
 
 const commitType = args["commit-type"];
 
@@ -62,9 +55,6 @@ const makeCommit = (input) => {
   console.log("Commit Successful! 🎉");
 };
 
-/**
- * send prompt to ai.
- */
 const sendMessage = async (input) => {
   console.log("prompting chat gpt...");
   const api = new ChatGPTAPI({
@@ -79,20 +69,11 @@ const sendMessage = async (input) => {
 };
 
 const getPromptForSingleCommit = (diff) => {
-  if (AI_PROVIDER == "openai") {
-    return (
-      "I want you to act as the author of a commit message in git." +
-      `I'll enter a git diff, and your job is to convert it into a useful commit message in ${language} language` +
-      (commitType ? ` with commit type '${commitType}'. ` : ". ") +
-      "Do not preface the commit with anything, use the present tense, return the full sentence, and use the conventional commits specification (<type in lowercase>: <subject>): " +
-      diff
-    );
-  }
-  //for less smart models, give simpler instruction.
   return (
-    "Summarize this git diff into a useful, 10 words commit message" +
-    (commitType ? ` with commit type '${commitType}.'` : "") +
-    ": " +
+    "I want you to act as the author of a commit message in git." +
+    `I'll enter a git diff, and your job is to convert it into a useful commit message in ${language} language` +
+    (commitType ? ` with commit type '${commitType}'. ` : ". ") +
+    "Do not preface the commit with anything, use the present tense, return the full sentence, and use the conventional commits specification (<type in lowercase>: <subject>): " +
     diff
   );
 };
@@ -105,7 +86,7 @@ const generateSingleCommit = async (diff) => {
 
   const text = await sendMessage(prompt);
 
-  let finalCommitMessage = text; // Assigning the value of text to finalCommitMessage
+  let finalCommitMessage = text;
 
   if (args.template) {
     finalCommitMessage = processTemplate({
