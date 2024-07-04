@@ -6,8 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "publish:major": "npm version major && npm publish --access public",
-    "ollama": "PROVIDER=ollama node index.js "
+    "publish:major": "npm version major && npm publish --access public"
   },
   "bin": {
     "ai-commit": "./index.js"
@@ -31,7 +30,7 @@
   },
   "homepage": "https://github.com/insulineru/ai-commit#readme",
   "dependencies": {
-    "chatgpt": "^5.0.0",
+    "chatgpt": "^5.2.5",
     "dotenv": "^16.0.3",
     "gpt-3-encoder": "^1.1.4",
     "inquirer": "^9.1.4"

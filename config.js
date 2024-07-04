@@ -1,6 +1,10 @@
-import * as dotenv from "dotenv";
-import { getArgs } from "./helpers.js";
+export const loadConfig = async () => {
+  const dotenv = await import("dotenv");
+  const { getArgs } = await import("./helpers.js");
 
-dotenv.config();
+  dotenv.default.config();
 
-export const args = getArgs();
+  return getArgs();
+};
+
+export const args = await loadConfig();

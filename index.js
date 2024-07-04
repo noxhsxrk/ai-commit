@@ -2,8 +2,6 @@
 
 "use strict";
 import { execSync } from "child_process";
-import { ChatGPTAPI } from "chatgpt";
-import inquirer from "inquirer";
 import { getArgs, checkGitRepository } from "./helpers.js";
 import { filterApi } from "./filterApi.js";
 import { args } from "./config.js";
@@ -57,6 +55,7 @@ const makeCommit = (input) => {
 
 const sendMessage = async (input) => {
   console.log("prompting chat gpt...");
+  const { ChatGPTAPI } = await import("chatgpt");
   const api = new ChatGPTAPI({
     apiKey,
     completionParams: {
@@ -108,7 +107,8 @@ const generateSingleCommit = async (diff) => {
     return;
   }
 
-  const answer = await inquirer.prompt([
+  const inquirer = await import("inquirer");
+  const answer = await inquirer.default.prompt([
     {
       type: "confirm",
       name: "continue",
@@ -162,7 +162,8 @@ const generateListCommits = async (diff, numOptions = 5) => {
   // add regenerate option
   msgs.push(REGENERATE_MSG);
 
-  const answer = await inquirer.prompt([
+  const inquirer = await import("inquirer");
+  const answer = await inquirer.default.prompt([
     {
       type: "list",
       name: "commit",

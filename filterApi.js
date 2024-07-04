@@ -1,12 +1,11 @@
-import { encode } from "gpt-3-encoder";
-import inquirer from "inquirer";
-
 const FEE_PER_1K_TOKENS = 0.02;
 const MAX_TOKENS = 4000;
 //this is the approximate cost of a completion (answer) fee from CHATGPT
 const FEE_COMPLETION = 0.001;
 
 async function filterApi({ prompt, numCompletion = 1, filterFee }) {
+  const inquirer = await import("inquirer");
+  const { encode } = await import("gpt-3-encoder");
   const numTokens = encode(prompt).length;
   const fee =
     (numTokens / 1000) * FEE_PER_1K_TOKENS + FEE_COMPLETION * numCompletion;
