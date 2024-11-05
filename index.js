@@ -44,13 +44,13 @@ const processTemplate = ({ template, commitMessage }) => {
 const makeCommit = (input) => {
   console.log("Committing Message... 🚀 ");
   execSync(`git commit -F -`, { input });
-  console.log("Commit  Successful! 🎉");
+  console.log("Commit Successful! 🎉");
 };
 
 const sendMessage = async (input) => {
   try {
     const response = await axios.post("http://127.0.0.1:11434/api/generate", {
-      model: "smollm2",
+      model: "llama3.2",
       prompt: input,
       stream: false,
     });
