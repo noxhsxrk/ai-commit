@@ -49,44 +49,13 @@ const makeCommit = (input) => {
 
 const sendMessage = async (input) => {
   try {
-    const response = await axios.post(
-      "http://127.0.0.1:11434/api/generate",
-      {
-        model: "llama3.2",
-        prompt: input,
-      },
-      {
-        responseType: "stream",
-      }
-    );
-
-    let fullResponse = "";
-
-    response.data.on("data", (chunk) => {
-      const lines = chunk.toString().split("\n");
-      lines.forEach((line) => {
-        if (line.trim()) {
-          try {
-            const jsonResponse = JSON.parse(line);
-            fullResponse += jsonResponse.response;
-          } catch (error) {
-            console.error("Error parsing JSON response:", error);
-          }
-        }
-      });
+    const response = await axios.post("http://127.0.0.1:11434/api/generate", {
+      model: "llama3.2",
+      prompt: input,
+      stream: false,
     });
 
-    // Wait for the end of the stream
-    return new Promise((resolve, reject) => {
-      response.data.on("end", () => {
-        resolve(fullResponse.trim()); // Return the complete response
-      });
-
-      response.data.on("error", (error) => {
-        console.error("Stream error:", error);
-        reject(error);
-      });
-    });
+    return response.data.response;
   } catch (error) {
     console.error("Error communicating with Ollama:", error);
     process.exit(1);
