@@ -5,17 +5,11 @@ import { execSync } from "child_process";
 import { getArgs, checkGitRepository } from "./helpers.js";
 import { filterApi } from "./filterApi.js";
 import { args } from "./config.js";
+import axios from "axios";
 
 const REGENERATE_MSG = "♻️ Regenerate Commit Messages";
 
-const apiKey = args.apiKey || process.env.OPENAI_API_KEY;
-
-const language = args.language || process.env.AI_COMMIT_LANGUAGE || "english";
-
-if (!apiKey) {
-  console.error("Please set the OPENAI_API_KEY environment variable.");
-  process.exit(1);
-}
+const language = "english";
 
 const commitType = args["commit-type"];
 
@@ -54,15 +48,45 @@ const makeCommit = (input) => {
 };
 
 const sendMessage = async (input) => {
-  console.log("Sending prompt to Ollama...");
-
   try {
-    const response = await axios.post("http://127.0.0.1:11434/generate", {
-      prompt: input,
+    const response = await axios.post(
+      "http://127.0.0.1:11434/api/generate",
+      {
+        model: "llama3.2",
+        prompt: input,
+      },
+      {
+        responseType: "stream",
+      }
+    );
+
+    let fullResponse = "";
+
+    response.data.on("data", (chunk) => {
+      const lines = chunk.toString().split("\n");
+      lines.forEach((line) => {
+        if (line.trim()) {
+          try {
+            const jsonResponse = JSON.parse(line);
+            fullResponse += jsonResponse.response;
+          } catch (error) {
+            console.error("Error parsing JSON response:", error);
+          }
+        }
+      });
     });
 
-    console.log("Response received from Ollama!");
-    return { text: response.data.text };
+    // Wait for the end of the stream
+    return new Promise((resolve, reject) => {
+      response.data.on("end", () => {
+        resolve(fullResponse.trim()); // Return the complete response
+      });
+
+      response.data.on("error", (error) => {
+        console.error("Stream error:", error);
+        reject(error);
+      });
+    });
   } catch (error) {
     console.error("Error communicating with Ollama:", error);
     process.exit(1);
@@ -72,9 +96,11 @@ const sendMessage = async (input) => {
 const getPromptForSingleCommit = (diff) => {
   return (
     "I want you to act as the author of a commit message in git." +
-    `I'll enter a git diff, and your job is to convert it into a useful commit message in ${language} language` +
-    (commitType ? ` with commit type '${commitType}'. ` : ". ") +
-    "Do not preface the commit with anything, use the present tense, return the full sentence, and use the conventional commits specification (<type in lowercase>: <subject>): " +
+    ` I'll enter a git diff, and your job is to convert it into a useful commit message in ${language} language` +
+    (commitType ? ` with commit type '${commitType}'.` : ".") +
+    " Please ensure the commit message follows the conventional commits specification, which includes a type (like 'feat', 'fix', or 'chore') followed by a colon and a brief description. " +
+    "Return a single line commit message without any additional text or formatting. All text should be in lowercase." +
+    "Here is the git diff:\n" +
     diff
   );
 };
@@ -85,27 +111,14 @@ const generateSingleCommit = async (diff) => {
   if (!(await filterApi({ prompt, filterFee: args["filter-fee"] })))
     process.exit(1);
 
-  const text = await sendMessage(prompt);
+  const text = await sendMessage(prompt); // Get the complete response
 
-  let finalCommitMessage = text;
-
-  if (args.template) {
-    finalCommitMessage = processTemplate({
-      template: args.template,
-      commitMessage: finalCommitMessage,
-    });
-
-    console.log(
-      `Proposed Commit With Template:\n------------------------------\n${finalCommitMessage}\n------------------------------`
-    );
-  } else {
-    console.log(
-      `Proposed Commit:\n------------------------------\n${finalCommitMessage}\n------------------------------`
-    );
-  }
+  console.log(
+    `Proposed Commit:\n------------------------------\n${text}\n------------------------------`
+  );
 
   if (args.force) {
-    makeCommit(finalCommitMessage);
+    makeCommit(text); // Use the correct variable here
     return;
   }
 
@@ -124,7 +137,7 @@ const generateSingleCommit = async (diff) => {
     process.exit(1);
   }
 
-  makeCommit(finalCommitMessage);
+  makeCommit(text); // Use the correct variable here
 };
 
 const generateListCommits = async (diff, numOptions = 5) => {
