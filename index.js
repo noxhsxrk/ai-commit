@@ -54,17 +54,19 @@ const makeCommit = (input) => {
 };
 
 const sendMessage = async (input) => {
-  console.log("prompting chat gpt...");
-  const { ChatGPTAPI } = await import("chatgpt");
-  const api = new ChatGPTAPI({
-    apiKey,
-    completionParams: {
-      model: "gpt-3.5-turbo", // Updated model name
-    },
-  });
-  const { text } = await api.sendMessage(input);
-  console.log("prompting ai done!");
-  return text;
+  console.log("Sending prompt to Ollama...");
+
+  try {
+    const response = await axios.post("http://127.0.0.1:11434/generate", {
+      prompt: input,
+    });
+
+    console.log("Response received from Ollama!");
+    return { text: response.data.text };
+  } catch (error) {
+    console.error("Error communicating with Ollama:", error);
+    process.exit(1);
+  }
 };
 
 const getPromptForSingleCommit = (diff) => {
