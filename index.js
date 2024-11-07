@@ -67,12 +67,12 @@ const sendMessage = async (input) => {
 
 const getPromptForSingleCommit = (diff) => {
   return (
-    "I want you to act as the author of a commit message in git." +
-    ` I'll enter a git diff, and your job is to convert it into a useful commit message in ${language} language` +
-    (commitType ? ` with commit type '${commitType}'.` : ".") +
-    " Please ensure the commit message follows the conventional commits specification, which includes a type (like 'feat', 'fix', or 'chore') followed by a colon and a brief description. " +
-    "Return a single line commit message without any additional text or formatting. All text should be in lowercase." +
-    "Here is the git diff:\n" +
+    "Create a single-line git commit message in lowercase using conventional commits format." +
+    " Start with one of these types: feat, fix, chore, docs, style, refactor, perf, test, followed by a colon and a brief description." +
+    (commitType ? ` Use commit type '${commitType}'.` : "") +
+    " Example: 'feat: add user authentication'" +
+    " Only provide the commit message, nothing else." +
+    "\nDiff:\n" +
     diff
   );
 };
@@ -132,10 +132,7 @@ const generateListCommits = async (diff, numOptions = 5) => {
 
   const text = await sendMessage(prompt);
 
-  let msgs = text
-    .split(";")
-    .map((msg) => msg.trim())
-    .map((msg) => processEmoji(msg, args.emoji));
+  let msgs = text.split(";").map((msg) => msg.trim());
 
   if (args.template) {
     msgs = msgs.map((msg) =>
