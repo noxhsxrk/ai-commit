@@ -1,5 +1,5 @@
 const FEE_PER_1K_TOKENS = 0.02;
-const MAX_TOKENS = 4000;
+const MAX_TOKENS = 1000000;
 //this is the approximate cost of a completion (answer) fee from CHATGPT
 const FEE_COMPLETION = 0.001;
 

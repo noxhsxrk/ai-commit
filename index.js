@@ -48,16 +48,19 @@ const makeCommit = (input) => {
 };
 
 const sendMessage = async (input) => {
+  const OLLAMA_API_ENDPOINT = "http://127.0.0.1:11434/api/generate";
+  const MODEL = "llama3.2";
+
   try {
-    const response = await axios.post("http://127.0.0.1:11434/api/generate", {
-      model: "llama3.2",
+    const response = await axios.post(OLLAMA_API_ENDPOINT, {
+      model: MODEL,
       prompt: input,
       stream: false,
     });
 
     return response.data.response;
   } catch (error) {
-    console.error("Error communicating with Ollama:", error);
+    console.error("Error communicating wi th Ollama:", error);
     process.exit(1);
   }
 };
@@ -80,14 +83,14 @@ const generateSingleCommit = async (diff) => {
   if (!(await filterApi({ prompt, filterFee: args["filter-fee"] })))
     process.exit(1);
 
-  const text = await sendMessage(prompt); // Get the complete response
+  const text = await sendMessage(prompt);
 
   console.log(
     `Proposed Commit:\n------------------------------\n${text}\n------------------------------`
   );
 
   if (args.force) {
-    makeCommit(text); // Use the correct variable here
+    makeCommit(text);
     return;
   }
 
@@ -106,7 +109,7 @@ const generateSingleCommit = async (diff) => {
     process.exit(1);
   }
 
-  makeCommit(text); // Use the correct variable here
+  makeCommit(text);
 };
 
 const generateListCommits = async (diff, numOptions = 5) => {
@@ -143,7 +146,6 @@ const generateListCommits = async (diff, numOptions = 5) => {
     );
   }
 
-  // add regenerate option
   msgs.push(REGENERATE_MSG);
 
   const inquirer = await import("inquirer");
@@ -174,7 +176,6 @@ async function generateAICommit() {
 
   const diff = execSync("git diff --staged").toString();
 
-  // Handle empty diff
   if (!diff) {
     console.log("No changes to commit 🙅");
     console.log(
